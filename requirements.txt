@@ -3,5 +3,4 @@ dash-bootstrap-components==1.2.1
 yfinance
 plotly
 pandas
-scipy
-pypfopt
+pypfopt==1.5.1
