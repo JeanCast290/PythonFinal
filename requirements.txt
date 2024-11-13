@@ -1,6 +1,6 @@
-dash==2.7.0
-dash-bootstrap-components==1.2.1
+dash
+dash-bootstrap-components
+pandas
 yfinance
 plotly
-pandas
-pypfopt==1.5.1
+pypfopt
