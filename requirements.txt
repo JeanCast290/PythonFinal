@@ -1,26 +1,7 @@
-import dash
-from dash import dcc
-from dash import html
-from dash import dash_table
-from dash.dependencies import Input, Output
-import plotly.express as px
-import pandas as pd
-import pathlib
-import dash_bootstrap_components as dbc
-import plotly.graph_objects as go
-import numpy as np
-import plotly.express as px
-import yfinance as yf
-import datetime
-import pyfolio as pf
-import warnings
-warnings.filterwarnings("ignore")
-import pyfolio as pf
-from pypfopt import risk_models
-from pypfopt import expected_returns
-from pypfopt.efficient_frontier import EfficientFrontier
-from pypfopt import EfficientFrontier
-import seaborn as sns
-import matplotlib.pyplot as plt
-
-
+dash
+dash-bootstrap-components
+plotly
+yfinance
+pandas
+numpy
+pypfopt
