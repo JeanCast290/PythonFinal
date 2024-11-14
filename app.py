@@ -80,11 +80,6 @@ app.layout = html.Div([
     [Input("stockdropdown", "value"), Input("metricdropdown", "value"), Input("date_picker", "start_date"), Input("date_picker", "end_date")]
 )
 def display_value(selected_stock, selected_metric, start_date, end_date):
-    # Verificar los valores seleccionados y el rango de fechas
-    print(f"Selected stocks: {selected_stock}")
-    print(f"Selected metric: {selected_metric}")
-    print(f"Start date: {start_date}, End date: {end_date}")
-
     # Filtrar datos según las empresas seleccionadas y el rango de fechas
     if len(selected_stock) == 0:
         selected_stock = stocks  # Si no hay selección, mostrar todas las acciones
@@ -101,8 +96,13 @@ def display_value(selected_stock, selected_metric, start_date, end_date):
         y_label = selected_metric
 
     # Verificar si el DataFrame `dfv_fltrd` contiene datos
-    print("Filtered DataFrame:")
-    print(dfv_fltrd.head())
+    if dfv_fltrd.empty:
+        # Mostrar un mensaje si no hay datos disponibles
+        return (
+            px.scatter(title="No hay datos disponibles para el rango de fechas seleccionado."),
+            px.scatter(title="No hay datos disponibles para el rango de fechas seleccionado."),
+            html.Div("No hay datos disponibles para mostrar en la tabla.")
+        )
 
     # Gráfico de líneas
     fig = px.line(dfv_fltrd.melt(id_vars="Date", var_name="Company", value_name=y_label),
