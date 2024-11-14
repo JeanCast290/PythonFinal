@@ -1,9 +1,8 @@
 import dash
 from dash import dcc, html, dash_table
 from dash.dependencies import Input, Output
-import pandas as pd
-import yfinance as yf
 import plotly.express as px
+import pandas as pd
 import dash_bootstrap_components as dbc
 import datetime
 
@@ -18,19 +17,9 @@ app.title = "Dashboard Financiero"
 # Lista de acciones
 stocks = ["PG", "KO", "PEP", "MMM", "HON", "CAT"]
 
-# Definir el rango de los últimos 5 años
-end_date = datetime.datetime.now()
-start_date = end_date - datetime.timedelta(days=5*365)
-
-# Descargar datos de precios ajustados limitados a los últimos 5 años y guardar en CSV para compatibilidad
-historical_data = yf.download(stocks, start=start_date, end=end_date)["Adj Close"]
-historical_data.to_csv("historical_data.csv")  # Guardar para compatibilidad en Render/GitHub
-historical_data = pd.read_csv("historical_data.csv", index_col="Date", parse_dates=True)  # Cargar de CSV
-
-# Calcular los retornos diarios
-returns_data = historical_data.pct_change().dropna()
-returns_data.to_csv("returns_data.csv")  # Guardar en CSV
-returns_data = pd.read_csv("returns_data.csv", index_col="Date", parse_dates=True)  # Cargar de CSV
+# Cargar datos del archivo CSV (asegúrate de que el archivo exista en el mismo directorio)
+historical_data = pd.read_csv("historical_data.csv", index_col="Date", parse_dates=True)
+returns_data = pd.read_csv("returns_data.csv", index_col="Date", parse_dates=True)
 
 # Lista de variables para el análisis
 sales_list = ["Precio de Cierre", "Retornos Diarios"]
@@ -42,7 +31,6 @@ app.layout = html.Div([
     # Fila con dropdowns para selección de acciones y métrica
     html.Div([
         html.Div([
-            # Dropdown para seleccionar las empresas a visualizar
             dcc.Dropdown(
                 id="stockdropdown", 
                 value=stocks, 
@@ -52,7 +40,6 @@ app.layout = html.Div([
             ),
         ], className="six columns", style={"width": "50%"}),
 
-        # Dropdown para seleccionar la variable financiera
         html.Div([
             dcc.Dropdown(
                 id="metricdropdown", 
@@ -87,7 +74,10 @@ def display_value(selected_stock, selected_metric):
         dfv_fltrd = historical_data[selected_stock].reset_index()
         y_label = selected_metric
 
-    # Verificar si el DataFrame `dfv_fltrd` contiene datos
+    # Debug: Imprimir los datos filtrados
+    print("Datos filtrados para los gráficos:")
+    print(dfv_fltrd.head())  # Verifica si tiene los datos esperados
+
     if dfv_fltrd.empty:
         return (
             px.scatter(title="No hay datos disponibles para las acciones seleccionadas."),
