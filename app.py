@@ -129,4 +129,4 @@ def display_value(selected_stock, selected_metric, start_date, end_date):
 server = app.server
 # Ejecutar la aplicación en el puerto 8053
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8053)
+    app.run_server(debug=False,host="0.0.0.0", port=8053)
