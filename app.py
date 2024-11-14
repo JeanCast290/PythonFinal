@@ -11,6 +11,9 @@ import datetime
 # Inicializar la aplicación Dash con Bootstrap
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+# Exponer el servidor para que Gunicorn pueda encontrarlo
+server = app.server
+
 app.title = "Dashboard Financiero"
 
 # Lista de acciones
@@ -22,14 +25,17 @@ start_date = end_date - datetime.timedelta(days=5*365)
 
 # Descargar datos de precios ajustados limitados a los últimos 5 años
 historical_data = yf.download(stocks, start=start_date, end=end_date)["Adj Close"]
+# Verificar si el DataFrame no está vacío
+print("Datos descargados:", historical_data.head())  # Debugging
 
 # Calcular los retornos diarios
 returns_data = historical_data.pct_change().dropna()
+print("Datos de retornos:", returns_data.head())  # Debugging
 
 # Lista de variables para el análisis
 sales_list = ["Precio de Cierre", "Retornos Diarios"]
 
-# Layout de la aplicación sin el selector de fechas
+# Layout de la aplicación
 app.layout = html.Div([
     html.H1("Dashboard Financiero", style={"textAlign": "center"}),
 
@@ -57,6 +63,15 @@ app.layout = html.Div([
         ], className="six columns", style={"width": "50%"})
     ], className="row"),
 
+    # Slicer de fechas con rango de los últimos 5 años
+    dcc.DatePickerRange(
+        id="date_picker",
+        start_date=historical_data.index.min(),
+        end_date=historical_data.index.max(),
+        min_date_allowed=historical_data.index.min(),
+        max_date_allowed=historical_data.index.max()
+    ),
+
     # Gráficos
     html.Div([dcc.Graph(id="bar", figure={})]),
     html.Div([dcc.Graph(id="boxplot", figure={})]),
@@ -68,22 +83,22 @@ app.layout = html.Div([
 # Callback para actualizar los gráficos y la tabla
 @app.callback(
     [Output("bar", "figure"), Output("boxplot", "figure"), Output("table-container_1", "children")],
-    [Input("stockdropdown", "value"), Input("metricdropdown", "value")]
+    [Input("stockdropdown", "value"), Input("metricdropdown", "value"), Input("date_picker", "start_date"), Input("date_picker", "end_date")]
 )
-def display_value(selected_stock, selected_metric):
-    # Filtrar datos según las empresas seleccionadas
+def display_value(selected_stock, selected_metric, start_date, end_date):
+    # Filtrar datos según las empresas seleccionadas y el rango de fechas
     if len(selected_stock) == 0:
         selected_stock = stocks  # Si no hay selección, mostrar todas las acciones
 
-    # Filtrar datos por la métrica seleccionada
+    # Filtrar datos por la métrica seleccionada y el rango de fechas
     if selected_metric == "Precio de Cierre":
-        dfv_fltrd = historical_data[selected_stock].reset_index()
+        dfv_fltrd = historical_data.loc[start_date:end_date, selected_stock].reset_index()
         y_label = "Precio de Cierre"
     elif selected_metric == "Retornos Diarios":
-        dfv_fltrd = returns_data[selected_stock].reset_index()
+        dfv_fltrd = returns_data.loc[start_date:end_date, selected_stock].reset_index()
         y_label = "Retornos Diarios"
     else:
-        dfv_fltrd = historical_data[selected_stock].reset_index()
+        dfv_fltrd = historical_data.loc[start_date:end_date, selected_stock].reset_index()
         y_label = selected_metric
 
     # Verificar si el DataFrame `dfv_fltrd` contiene datos
@@ -124,8 +139,7 @@ def display_value(selected_stock, selected_metric):
 
     return fig, fig2, data_table
 
-# Exponer el servidor para que Gunicorn pueda encontrarlo
-server = app.server
+
 
 # Ejecutar la aplicación en el puerto 8053
 if __name__ == "__main__":
