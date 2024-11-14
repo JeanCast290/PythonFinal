@@ -80,6 +80,11 @@ app.layout = html.Div([
     [Input("stockdropdown", "value"), Input("metricdropdown", "value"), Input("date_picker", "start_date"), Input("date_picker", "end_date")]
 )
 def display_value(selected_stock, selected_metric, start_date, end_date):
+    # Verificar los valores seleccionados y el rango de fechas
+    print(f"Selected stocks: {selected_stock}")
+    print(f"Selected metric: {selected_metric}")
+    print(f"Start date: {start_date}, End date: {end_date}")
+
     # Filtrar datos según las empresas seleccionadas y el rango de fechas
     if len(selected_stock) == 0:
         selected_stock = stocks  # Si no hay selección, mostrar todas las acciones
@@ -94,6 +99,10 @@ def display_value(selected_stock, selected_metric, start_date, end_date):
     else:
         dfv_fltrd = historical_data.loc[start_date:end_date, selected_stock].reset_index()
         y_label = selected_metric
+
+    # Verificar si el DataFrame `dfv_fltrd` contiene datos
+    print("Filtered DataFrame:")
+    print(dfv_fltrd.head())
 
     # Gráfico de líneas
     fig = px.line(dfv_fltrd.melt(id_vars="Date", var_name="Company", value_name=y_label),
@@ -127,6 +136,7 @@ def display_value(selected_stock, selected_metric, start_date, end_date):
 
 # Exponer el servidor para que Gunicorn pueda encontrarlo
 server = app.server
+
 # Ejecutar la aplicación en el puerto 8053
 if __name__ == "__main__":
-    app.run_server(debug=False,host="0.0.0.0", port=8053)
+    app.run_server(debug=True, host="0.0.0.0", port=8053)
