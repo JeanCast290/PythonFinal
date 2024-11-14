@@ -6,7 +6,7 @@ import yfinance as yf
 import plotly.express as px
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output
-
+import datetime 
 
 # Inicializar la aplicación Dash con Bootstrap
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
