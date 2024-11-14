@@ -125,6 +125,8 @@ def display_value(selected_stock, selected_metric, start_date, end_date):
 
     return fig, fig2, data_table
 
+# Exponer el servidor para que Gunicorn pueda encontrarlo
+server = app.server
 # Ejecutar la aplicación en el puerto 8053
 if __name__ == "__main__":
     app.run_server(debug=True, port=8053)
