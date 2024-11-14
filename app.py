@@ -29,7 +29,7 @@ returns_data = historical_data.pct_change().dropna()
 # Lista de variables para el análisis
 sales_list = ["Precio de Cierre", "Retornos Diarios"]
 
-# Layout de la aplicación
+# Layout de la aplicación sin el selector de fechas
 app.layout = html.Div([
     html.H1("Dashboard Financiero", style={"textAlign": "center"}),
 
@@ -57,15 +57,6 @@ app.layout = html.Div([
         ], className="six columns", style={"width": "50%"})
     ], className="row"),
 
-    # Slicer de fechas con rango de los últimos 5 años
-    dcc.DatePickerRange(
-        id="date_picker",
-        start_date=historical_data.index.min(),
-        end_date=historical_data.index.max(),
-        min_date_allowed=historical_data.index.min(),
-        max_date_allowed=historical_data.index.max()
-    ),
-
     # Gráficos
     html.Div([dcc.Graph(id="bar", figure={})]),
     html.Div([dcc.Graph(id="boxplot", figure={})]),
@@ -77,30 +68,29 @@ app.layout = html.Div([
 # Callback para actualizar los gráficos y la tabla
 @app.callback(
     [Output("bar", "figure"), Output("boxplot", "figure"), Output("table-container_1", "children")],
-    [Input("stockdropdown", "value"), Input("metricdropdown", "value"), Input("date_picker", "start_date"), Input("date_picker", "end_date")]
+    [Input("stockdropdown", "value"), Input("metricdropdown", "value")]
 )
-def display_value(selected_stock, selected_metric, start_date, end_date):
-    # Filtrar datos según las empresas seleccionadas y el rango de fechas
+def display_value(selected_stock, selected_metric):
+    # Filtrar datos según las empresas seleccionadas
     if len(selected_stock) == 0:
         selected_stock = stocks  # Si no hay selección, mostrar todas las acciones
 
-    # Filtrar datos por la métrica seleccionada y el rango de fechas
+    # Filtrar datos por la métrica seleccionada
     if selected_metric == "Precio de Cierre":
-        dfv_fltrd = historical_data.loc[start_date:end_date, selected_stock].reset_index()
+        dfv_fltrd = historical_data[selected_stock].reset_index()
         y_label = "Precio de Cierre"
     elif selected_metric == "Retornos Diarios":
-        dfv_fltrd = returns_data.loc[start_date:end_date, selected_stock].reset_index()
+        dfv_fltrd = returns_data[selected_stock].reset_index()
         y_label = "Retornos Diarios"
     else:
-        dfv_fltrd = historical_data.loc[start_date:end_date, selected_stock].reset_index()
+        dfv_fltrd = historical_data[selected_stock].reset_index()
         y_label = selected_metric
 
     # Verificar si el DataFrame `dfv_fltrd` contiene datos
     if dfv_fltrd.empty:
-        # Mostrar un mensaje si no hay datos disponibles
         return (
-            px.scatter(title="No hay datos disponibles para el rango de fechas seleccionado."),
-            px.scatter(title="No hay datos disponibles para el rango de fechas seleccionado."),
+            px.scatter(title="No hay datos disponibles para las acciones seleccionadas."),
+            px.scatter(title="No hay datos disponibles para las acciones seleccionadas."),
             html.Div("No hay datos disponibles para mostrar en la tabla.")
         )
 
@@ -116,7 +106,7 @@ def display_value(selected_stock, selected_metric, start_date, end_date):
                   title=f"Distribución de {selected_metric} por Compañía",
                   width=1000, height=500)
 
-    # Modificar el DataFrame para hacer una tabla de precios o retornos por fechas
+    # Modificar el DataFrame para hacer una tabla de precios o retornos
     df_reshaped = dfv_fltrd.set_index("Date")
     df_reshaped2 = df_reshaped[selected_stock].reset_index()
 
